@@ -1,61 +1,94 @@
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import (
-    accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, classification_report
+    roc_auc_score, roc_curve, confusion_matrix, 
+    f1_score, accuracy_score, precision_score, recall_score
 )
+import torch
+import torch.nn as nn
 
-def get_performance_metrics(y_true, y_pred, y_prob=None):
+def get_probs(model, X):
     """
-    Calculates standard binary classification metrics.
+    Universal helper to get probability scores from ANY model type.
+    """
+    # Convert DataFrame to Numpy array if needed
+    if isinstance(X, pd.DataFrame):
+        X = X.values
+
+    # Check if it is a PyTorch Model
+    if isinstance(model, nn.Module):
+        model.eval()
+        X_tensor = torch.tensor(X, dtype=torch.float32)
+        with torch.no_grad():
+            # Forward pass -> squeeze to 1D array
+            probs = model(X_tensor).squeeze().numpy()
+            return probs
+
+    # Otherwise, assume it is Sklearn/XGBoost/CatBoost
+    else:
+        # Return probability of class 1
+        return model.predict_proba(X)[:, 1]
+def get_preds(model, X, threshold=0.5):
+    """
+    Universal helper to get binary class labels (0/1).
+    """
+    probs = get_probs(model, X)
+    return (probs > threshold).astype(int)
+
+def compute_metrics(model, X_test, y_test, threshold=0.5):
+    """
+    Returns a dictionary.
+    """
+    probs = get_probs(model, X_test)
+    preds = (probs > threshold).astype(int)
     
-    Args:
-        y_true: Actual labels (0 or 1)
-        y_pred: Predicted labels (0 or 1)
-        y_prob: Predicted probabilities for the positive class (for AUC)
+    # Calculate AUC
+    try:
+        auc = roc_auc_score(y_test, probs)
+    except ValueError:
+        auc = 0.0
         
-    Returns:
-        dict: A dictionary containing the metrics.
-    """
-    metrics = {
-        'Accuracy': accuracy_score(y_true, y_pred),
-        'Precision': precision_score(y_true, y_pred, zero_division=0),
-        'Recall': recall_score(y_true, y_pred, zero_division=0),
-        'F1 Score': f1_score(y_true, y_pred, zero_division=0)
+    return {
+        "AUC": auc,
+        "F1": f1_score(y_test, preds),
+        "Accuracy": accuracy_score(y_test, preds),
+        "Precision": precision_score(y_test, preds, zero_division=0),
+        "Recall": recall_score(y_test, preds)
     }
-    
-    if y_prob is not None:
-        try:
-            metrics['AUC-ROC'] = roc_auc_score(y_true, y_prob)
-        except ValueError:
-            metrics['AUC-ROC'] = "N/A (Only one class present)"
-            
-    return metrics
 
-def print_model_performance(y_true, y_pred, y_prob=None, model_name="Model"):
-    """
-    Prints a clean report of the model's performance.
-    """
-    print(f"--- Performance Report: {model_name} ---")
-    metrics = get_performance_metrics(y_true, y_pred, y_prob)
-    
-    for k, v in metrics.items():
-        if isinstance(v, float):
-            print(f"{k:<15}: {v:.4f}")
-        else:
-            print(f"{k:<15}: {v}")
-            
-    print("\nClassification Report:")
-    print(classification_report(y_true, y_pred))
 
-def plot_confusion_matrix(y_true, y_pred, title="Confusion Matrix"):
+
+def plot_roc_curve(model, X_test, y_test, model_name="Model", ax=None):
     """
-    Plots a Confusion Matrix using Seaborn.
+    Plots the ROC Curve.
     """
-    cm = confusion_matrix(y_true, y_pred)
+    probs = get_probs(model, X_test)
+    fpr, tpr, _ = roc_curve(y_test, probs)
+    auc = roc_auc_score(y_test, probs)
+
+    if ax is None:
+        plt.figure(figsize=(8, 6))
+        ax = plt.gca()
+        
+    ax.plot(fpr, tpr, label=f'{model_name} (AUC = {auc:.3f})', linewidth=2)
+    ax.plot([0, 1], [0, 1], 'k--', alpha=0.5) 
+    ax.set_title('ROC Curve')
+    ax.legend(loc="lower right")
+    ax.grid(True, alpha=0.3)
+def plot_confusion_matrix(model, X_test, y_test, model_name="Model"):
+    """
+    Plots the Confusion Matrix.
+    """
+    probs = get_probs(model, X_test)
+    preds = (probs > 0.5).astype(int)
+    
+    cm = confusion_matrix(y_test, preds)
+    
     plt.figure(figsize=(6, 5))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False)
     plt.xlabel('Predicted Label')
     plt.ylabel('True Label')
-    plt.title(title)
+    plt.title(f'Confusion Matrix: {model_name}')
     plt.show()

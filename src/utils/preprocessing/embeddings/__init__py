@@ -1,0 +1,12 @@
+# Import functions from the sub-modules so they are exposed directly
+from .base import prepare_sequences, vectorize_patients
+from .word2vec import train_word2vec
+from .external import load_pretrained_embeddings
+
+# This list defines what is imported when someone uses "from embeddings import *"
+__all__ = [
+    'prepare_sequences',
+    'vectorize_patients',
+    'train_word2vec',
+    'load_pretrained_embeddings'
+]
