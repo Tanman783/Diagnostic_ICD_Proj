@@ -1,2 +1,30 @@
-# Diagnostic_ICD_Proj
-This project explores how various strategies for representing ICD codes affect the predictive performance of machine learning models in clinical applications. Using the MIMIC-IV dataset, we focus on predicting chemotherapy side effects based on diagnostic codes
+\# ICD Code Project
+
+
+
+\## Overview
+
+This project focuses on analyzing and processing ICD (International Classification of Diseases) codes using Python.  
+
+All dependencies are managed using a Conda environment for reproducibility.
+
+
+
+---
+
+
+
+\## 🧰 Setup Instructions
+
+
+
+\### 1. Clone the repository
+
+```bash
+
+git clone https://github.com/<your-username>/icd-code-project.git
+
+cd icd-code-project
+
+
+
