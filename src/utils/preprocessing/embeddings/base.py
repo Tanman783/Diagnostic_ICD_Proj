@@ -8,6 +8,13 @@ def prepare_sequences(df_codes):
     """
     df_working = df_codes.copy()
 
+    # Converts IDs to String (prevents Int vs Str mismatch)
+    df_working['hadm_id'] = df_working['hadm_id'].astype(str)
+
+    # Ensure codes are strings and remove trailing spaces ('Z5111  ' -> 'Z5111')
+    if 'icd_code' in df_working.columns:
+        df_working['icd_code'] = df_working['icd_code'].astype(str).str.strip()
+
     # Ensure hadm_id is a column
     if df_working.index.name == 'hadm_id':
         df_working = df_working.reset_index()

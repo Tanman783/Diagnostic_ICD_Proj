@@ -202,3 +202,34 @@ def plot_cv_confusion_matrices(models_map, X_data, y, fold_files, load_fold_func
 
     plt.tight_layout()
     plt.show()
+
+def plot_performance_heatmap(leaderboard, metric="AUC", title="Model Performance"):
+    """
+    Generates a heatmap comparing Model Performance vs. Dimensions.
+    
+    Args:
+        leaderboard (list or pd.DataFrame): The list of results dictionaries or the results DataFrame.
+        metric (str): The metric to plot (e.g., "AUC", "F1", "Accuracy").
+        title (str): The title of the plot.
+    """
+    # Ensure we are working with a DataFrame
+    if isinstance(leaderboard, list):
+        df = pd.DataFrame(leaderboard)
+    else:
+        df = leaderboard.copy()
+        
+    # Pivot the data: Index=Model, Columns=Dimension, Values=Metric
+    try:
+        heatmap_data = df.pivot(index="Model", columns="Dimension", values=metric)
+    except KeyError as e:
+        print(f"Error creating heatmap: Missing column {e}")
+        return
+
+    # Plot
+    plt.figure(figsize=(8, 5))
+    sns.heatmap(heatmap_data, annot=True, fmt=".4f", cmap="viridis", linewidths=.5)
+    plt.title(title, fontsize=14)
+    plt.xlabel("Embedding Dimension", fontsize=12)
+    plt.ylabel("Model", fontsize=12)
+    plt.tight_layout()
+    plt.show()
