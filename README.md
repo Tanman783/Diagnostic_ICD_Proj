@@ -1,32 +1,29 @@
 # Diagnostic ICD Project
 
-This repository contains the experimental pipeline for predicting diagnostic ICD codes using the MIMIC-IV dataset.  
+This repository contains the experimental pipeline for predicting diagnostic ICD codes using the MIMIC-IV dataset. All dependencies are managed using a Conda environment for reproducibility.
 
-All dependencies are managed using a Conda environment for reproducibility.
+---
 
-
-\## 🧰 Setup Instructions
-
+## 🧰 Setup Instructions
 
 ### 1. Clone the repository
 ```bash
-
 git clone https://github.com/Tanman783/Diagnostic_ICD_Proj.git
 cd Diagnostic_ICD_Proj
 
-### 2. Configure Conda Environment
-
+2. Configure Conda Environment
 Choose the command below that matches your operating system:
 
 For Windows Users (Local):
-```bash
-conda env create -f environment.yml
-conda activate [icd-env]
 
+Bash
+conda env create -f environment.yml
+conda activate icd-env
 For Linux Users (VS Code/Remote):
-```bash
+
+Bash
 conda env create -f environment_linux.yml
-conda activate [ICD]
+conda activate ICD
 
 ### 3. 📂 Project Structure
 The repository is organized as follows:
