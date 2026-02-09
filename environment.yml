@@ -30,7 +30,6 @@ dependencies:
   - h11=0.16.0
   - httpcore=1.0.9
   - httpx=0.28.1
-  - icc_rt=2022.1.0
   - idna=3.7
   - intel-openmp=2025.0.0
   - ipykernel=6.30.1
@@ -74,6 +73,7 @@ dependencies:
   - notebook=7.4.5
   - notebook-shim=0.2.4
   - numexpr=2.11.0
+  - icc_rt=2022.1.0
   - numpy=1.26.4
   - numpy-base=1.26.4
   - openssl=3.0.18

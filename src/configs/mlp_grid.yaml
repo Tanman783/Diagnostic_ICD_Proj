@@ -1,0 +1,20 @@
+MLP:
+  default:
+    hidden_dims: [128, 64]
+    dropout: 0.2
+    learning_rate: 0.001
+    batch_size: 32
+    
+  grid_search:
+    # Architecture
+    # [64] = 1 Layer (Bottleneck)
+    # [128, 64] = 2 Layers (Compression)
+    # [256, 128, 64] = 3 Layers (Deep Compression)
+    hidden_dims: [[64], [128], [128, 64], [256, 128, 64]]
+    
+    # Regularization
+    dropout: [0.2, 0.3]
+    
+    # Optimization (Using 1e-3 and 5e-4 as discussed)
+    learning_rate: [0.001, 0.0005]
+    batch_size: [32]

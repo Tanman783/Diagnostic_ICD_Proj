@@ -1,12 +1,27 @@
-# Conda environment and cache
-.env/
-__pycache__/
-.ipynb_checkpoints/
-*.pyc
-.DS_Store
+# Git internals (should never be tracked)
+.git/
 
-mimic-iv-3.1.zip
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Data and large binaries
+*.zip
+*.gz
+*.pkl
 mimic-iv-3.1/
 mimic-code/
- 
- 
+# Externalized data
+data/embeddings/
+
+# Environments and IDEs
+.env/
+.venv/
+env/
+venv/
+.vscode/
+.idea/
+
+# Research artifacts
+.ipynb_checkpoints/

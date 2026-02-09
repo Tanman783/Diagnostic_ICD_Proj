@@ -1,68 +1,94 @@
 import pandas as pd
 import numpy as np
-from src.utils import data_loader
+from src.utils.preprocessing.embeddings import base
 
 def load_pretrained_embeddings(path):
     """
-    Loads embeddings from a file path OR a URL.
+    Robust loader for Kane (CSV), Dryad (W2V/Txt), and Harvard (ClinVec) formats.
+    Auto-detects separators and header styles.
     """
+    path = str(path)
     print(f"Loading embeddings from: {path}...")
+    
     try:
-        compression = 'gzip' if path.endswith('.gz') else None
-        df = pd.read_csv(path, compression=compression)
+        df = None
+        # STRATEGY 1: Try Standard CSV (Comma)
+        if path.endswith('.csv') or path.endswith('.csv.gz'):
+            try:
+                df = pd.read_csv(path)
+            except:
+                pass # Failed? Fall through to Strategy 2
+        
+        # STRATEGY 2: Try Space/Tab separated
+        if df is None:
+            # 'header=None' because W2V files often don't have column names
+            try:
+                df = pd.read_csv(path, sep=r'\s+', header=None, skiprows=1) # 'skiprows=1' is a heuristic: often the first line is "Count Dimension" (e.g. 4000 100)
+                df.columns = ['code'] + [f'v{i}' for i in range(df.shape[1]-1)] # Assign temporary column names: Code, v1, v2...
+            except:
+                df = pd.read_csv(path, sep=r'\s+', header=None)  # Last resort: Try reading without skipping (maybe no header line)
+                df.columns = ['code'] + [f'v{i}' for i in range(df.shape[1]-1)]
+
+        # --- NORMALIZE COLUMN NAMES ---
+        # We need to find which column holds the ICD code string.
+        code_col = None
+        # Common names in these datasets:
+        possible_names = ['code', 'icd_code', 'icd10', 'diagnosis', 'node_id', 'Code', 'key']
+        
+        for name in possible_names:
+            if name in df.columns:
+                code_col = name
+                break
+        
+        # Fallback: If no known name found, assume the FIRST column is the code
+        if code_col is None:
+            code_col = df.columns[0]
+            print(f"Warning: Could not identify code column by name. Using first column: '{code_col}'")
+
+        # --- EXTRACT VECTORS ---
+        # Identify vector columns (exclude metadata strings)
+        meta_cols = [code_col, 'desc', 'description', 'label', 'definition']
+        vector_cols = [c for c in df.columns if c not in meta_cols]
+        
+        embed_dict = {}
+        for _, row in df.iterrows():
+            # Clean Code: Remove dots (E11.9 -> E119), strip whitespace
+            raw_code = str(row[code_col])
+            clean_code = raw_code.replace(".", "").strip()
+            
+            # Extract Vector
+            try:
+                # Ensure we only grab numeric data
+                vec = row[vector_cols].values.astype(np.float32)
+                embed_dict[clean_code] = vec
+            except ValueError:
+                continue # Skip rows with parsing errors (headers etc)
+            
+        print(f" Loaded {len(embed_dict)} vectors with dimension {len(vector_cols)}.")
+        return embed_dict, len(vector_cols)
+
     except Exception as e:
         print(f" Error loading embeddings: {e}")
+        return None, 0
+
+def create_feature_matrix(valid_ids, sequences_dict, embedding_path):
+    """
+    Orchestrates the loading and vectorization for Static Embeddings
+    Returns a DataFrame ready for the Experiment.
+    """
+    # 1. Load Embeddings
+    embed_dict, dim = load_pretrained_embeddings(embedding_path)
+    
+    if not embed_dict:
         return None
 
-    meta_cols = ['code', 'desc', 'description']
-    vector_cols = [c for c in df.columns if c not in meta_cols]
+    # 2. Vectorize Patients
+    X_matrix = base.vectorize_patients(
+        hadm_ids=valid_ids, 
+        sequences_dict=sequences_dict, 
+        embedding_lookup=embed_dict, 
+        vector_size=dim
+    )
     
-    embed_dict = {}
-    for _, row in df.iterrows():
-        clean_code = str(row['code']).replace(".", "").strip()
-        embed_dict[clean_code] = row[vector_cols].values.astype(np.float32)
-        
-    print(f" Loaded {len(embed_dict)} vectors.")
-    return embed_dict, len(vector_cols)
-
-def run_cv_evaluation(X_df, df_target, fold_files, model_trainer_func, model_params={}, verbose=False):
-    """
-    Generic Cross-Validation Orchestrator for Static Embeddings .    
-    Args:
-        X_df: Pre-calculated DataFrame of patient vectors (Index=hadm_id).
-        model_trainer_func: Callback function to train/evaluate a model.
-    """
-    fold_metrics = {'AUC': [], 'F1': [], 'Accuracy': [], 'Precision': [], 'Recall': []}
-    
-    for i, fold_path in enumerate(fold_files):
-        # Load Fold IDs
-        train_ids, val_ids, test_ids = data_loader.load_single_fold(fold_path)
-        
-        # Split Data (Using the pre-calculated X_df)
-        # Note: .reindex or .loc handles the splitting safely
-        X_train = X_df.loc[train_ids].values
-        X_val   = X_df.loc[val_ids].values
-        X_test  = X_df.loc[test_ids].values
-        
-        y_train = df_target.set_index('hadm_id').loc[train_ids, 'label'].values
-        y_val   = df_target.set_index('hadm_id').loc[val_ids, 'label'].values
-        y_test  = df_target.set_index('hadm_id').loc[test_ids, 'label'].values
-        
-        # Delegate Training
-        scores = model_trainer_func(
-            X_train=X_train, y_train=y_train, 
-            X_val=X_val, y_val=y_val, 
-            X_test=X_test, y_test=y_test, 
-            **model_params
-        )
-        
-        if verbose:
-            print(f"> Fold {i} AUC: {scores['AUC']:.4f}")
-            
-        for k, v in scores.items():
-            if k in fold_metrics:
-                fold_metrics[k].append(v)
-
-    # 4. Aggregate
-    avg_scores = {k: np.mean(v) for k, v in fold_metrics.items()}
-    return avg_scores
+    # 3. Return as DataFrame (Indices aligned with valid_ids)
+    return pd.DataFrame(X_matrix, index=valid_ids)

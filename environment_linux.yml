@@ -1,0 +1,32 @@
+name: ICD
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.12
+  - numpy
+  - pandas
+  - scipy
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - plotly
+  - networkx
+  - sympy
+  - joblib
+  - threadpoolctl
+  - mpmath
+  - catboost
+  - xgboost
+  - gensim
+  - fsspec
+  - smart-open
+  - python-graphviz
+  - pip
+  - zlib
+  - zstd
+  - pip:
+      - torch==2.9.1
+      - torchvision==0.24.1
+      - torchaudio==2.9.1
+      - narwhals==2.12.0
