@@ -6,13 +6,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Data and large binaries
-*.zip
-*.gz
-*.pkl
+# Large Raw Data (keep these ignored)
 mimic-iv-3.1/
 mimic-code/
-# Externalized data
+
+# Externalized Data (Removes the 600MB folder)
 data/embeddings/
 
 # Environments and IDEs
