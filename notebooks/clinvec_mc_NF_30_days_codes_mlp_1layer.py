@@ -111,8 +111,8 @@ for res in all_results:
         df_hist['Epoch'] = range(1, len(df_hist) + 1)
         history_log.append(df_hist)
 
-visualization.save_experiment_results(all_results, history_log, f"{EXPERIMENT_NAME}_metrics", RESULTS_DIR, PLOTS_DIR)
-visualization.summarize_experiment(all_results, RESULTS_DIR, PLOTS_DIR, group_by=['Model', 'Feature_Type', 'Dimension'], 
-script_name=EXPERIMENT_NAME)
 
+visualization.save_experiment_results(all_results, history_log, f"{EXPERIMENT_NAME}_metrics", RESULTS_DIR, PLOTS_DIR)
+visualization.summarize_experiment(all_results, RESULTS_DIR, PLOTS_DIR, group_by=['Model', 'Feature_Type', 'Dimension'], script_name=EXPERIMENT_NAME)
+visualization.save_aggregated_validation_curves(history_log, PLOTS_DIR / 'learning_curves')
 print("Experiment Complete.")

@@ -35,11 +35,18 @@ def plot_model_comparison(df_results, metric='Test_AUC', plots_dir=None, script_
         hue_col = None # Single color if no variation
 
     # 2. Plot
-    sns.barplot(
-        data=df_results, x='Model', y=metric, hue=hue_col, 
-        palette='tab10', errorbar='sd',edgecolor='black', linewidth=1
-    )
-    
+    if hue_col:
+        sns.barplot(
+            data=df_results, x='Model', y=metric, hue=hue_col, 
+            palette='tab10', errorbar='sd', edgecolor='black', linewidth=1
+        )
+    else:
+        # Satisfies Seaborn's new requirement for palette without a secondary grouping
+        sns.barplot(
+            data=df_results, x='Model', y=metric, hue='Model', legend=False,
+            palette='tab10', errorbar='sd', edgecolor='black', linewidth=1
+        )
+
     plt.title(f'Model Comparison: {metric} (Mean ± Std)', fontsize=14)
     plt.ylabel(metric, fontsize=12)
     plt.xlabel('Model', fontsize=12) 
@@ -109,7 +116,7 @@ def plot_aggregated_confusion_matrices(df_results, plots_dir):
     rows = math.ceil(n_plots / cols)
     
     fig, axes = plt.subplots(rows, cols, figsize=(5 * cols, 4 * rows))
-    axes = axes.flatten() if n_plots > 1 else [axes]
+    axes = axes.flatten()
 
     # 4. Plot Each
     for i, data in enumerate(plot_data):

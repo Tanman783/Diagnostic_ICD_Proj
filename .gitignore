@@ -23,3 +23,5 @@ venv/
 
 # Research artifacts
 .ipynb_checkpoints/
+
+results/**/detailed_history_*.csv
