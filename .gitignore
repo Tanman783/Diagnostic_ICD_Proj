@@ -25,3 +25,5 @@ venv/
 .ipynb_checkpoints/
 
 results/**/detailed_history_*.csv
+
+catboost_info/
