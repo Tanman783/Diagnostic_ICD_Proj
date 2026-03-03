@@ -27,3 +27,4 @@ venv/
 results/**/detailed_history_*.csv
 
 catboost_info/
+data/mimic_*
