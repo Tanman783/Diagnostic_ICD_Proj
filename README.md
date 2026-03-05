@@ -40,10 +40,13 @@ conda activate ICD
 The repository is organized as follows:
 
 * **data/**: Contains processed cohort files (`.csv.gz` and `.pkl`).
+* **figures/**: Contains the specific images and plots generated for the final report.
 * **src/**: Core project logic, including `preprocessing`, `training`, and `evaluation` modules.
 * **src/configs/**: YAML files for hyperparameter grid search.
 * **notebooks/**: Standalone experimental scripts converted from notebooks.
 * **results/**: Comprehensive experimental outputs including summary metrics and performance plots.
+* **feature_importance.ipynb**: Notebook utilized for feature importance analysis.
+* **plotting.ipynb**: Notebook utilized for generating and formatting the final visualizations.
 
 ---
 
