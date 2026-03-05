@@ -68,6 +68,19 @@ The following files are excluded from GitHub due to file size limits and must be
 
 ---
 
+🔒 Data Access and Reproducibility Disclaimer
+The dataset used in this project is derived from MIMIC-IV, which is a restricted-access clinical database. Due to data use agreements and the PhysioNet credentialing process, all preprocessed data files, cohort extracts, and cross-validation folds have been explicitly removed from the data/ directory in this repository.
+
+To execute this codebase and reproduce the results, users must:
+
+Obtain credentialed access to the MIMIC-IV dataset via PhysioNet.
+
+Download the required raw MIMIC-IV tables.
+
+Execute the preprocessing scripts to generate the necessary .csv.gz and .pkl cohort files, ensuring they are saved within the local data/ directory.
+
+Attempting to run the core logic, notebooks, or evaluation modules without first populating the data/ directory with the correctly formatted files will result in missing file path execution errors.
+
 ## 🚀 Running Scripts
 All experimental scripts in the notebooks/ folder include logic to automatically detect the project root:
 
