@@ -1,6 +1,6 @@
 # Diagnostic ICD Project
 
-This repository contains the experimental pipeline for predicting diagnostic ICD codes using the MIMIC-IV dataset. All dependencies are managed using a Conda environment for reproducibility.
+This repository contains the experimental pipeline for evaluating different representations of diagnostic ICD-10-CM codes for predicting chemotherapy-related complications using the MIMIC-IV dataset. The project compares sparse, data-driven, and knowledge-guided representations across multiple machine learning models. All dependencies are managed using a Conda environment for reproducibility.
 
 ---
 
